@@ -93,7 +93,25 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        search_button.setOnClickListener {
+            val category :String? = search_edit_text.text.toString()
+            if(category == ""){
+                reloadListView()
+            }else{
+                // 入力・編集する画面に遷移させる
+                val results2 = mRealm.where(Task::class.java).equalTo("category", category).findAll()
+                // 上記の結果を、TaskList としてセットする
+                mTaskAdapter.taskList = mRealm.copyFromRealm(results2)
+
+                // TaskのListView用のアダプタに渡す
+                listView1.adapter = mTaskAdapter
+
+                // 表示を更新するために、アダプターにデータが変更されたことを知らせる
+                mTaskAdapter.notifyDataSetChanged()
+            }
+        }
         reloadListView()
+
     }
 
     private fun reloadListView() {

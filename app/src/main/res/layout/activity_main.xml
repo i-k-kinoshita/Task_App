@@ -8,8 +8,34 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
+
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/search_edit_text"
+            android:layout_width="300dp"
+            android:layout_height="60dp"
+            android:layout_alignParentStart="true"
+            android:layout_toLeftOf="@+id/search_button"
+            android:hint="カテゴリーで検索" />
+
+        <Button
+            android:id="@+id/search_button"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="検索" />
+
+    </LinearLayout>
+
     <ListView
         android:id="@+id/listView1"
+        android:layout_marginTop="50dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
