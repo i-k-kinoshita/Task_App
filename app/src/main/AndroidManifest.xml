@@ -31,6 +31,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="jp.techacademy.kosuke.task_app.MainActivity"/>
         </activity>
+        <activity
+            android:name=".CategoryActivity"
+            android:label="タスク"
+            android:parentActivityName=".InputActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="jp.techacademy.kosuke.task_app.MainActivity"/>
+        </activity>
 
         <receiver android:name=".TaskAlarmReceiver"/>
 

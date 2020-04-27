@@ -12,6 +12,12 @@ import java.util.*
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.net.Uri
+import android.util.Log
+import android.widget.ArrayAdapter
+import kotlinx.android.synthetic.main.activity_category.*
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlin.collections.ArrayList
 
 class InputActivity : AppCompatActivity() {
 
@@ -24,6 +30,10 @@ class InputActivity : AppCompatActivity() {
 
     // Taskクラスのオブジェクト
     private var mTask: Task? = null
+
+    // Categoryクラスのオブジェクト
+    private var mCategory: Category? = null
+
 
     // 日付を設定するButtonのリスナー
     private val mOnDateClickListener = View.OnClickListener {
@@ -56,22 +66,21 @@ class InputActivity : AppCompatActivity() {
         finish() // InputActivityを閉じて前の画面（MainActivity）に戻る
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+
+    override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_input)
-
-        // ActionBarを設定する
-        val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
-        // setSupportActionBarメソッドにより、ツールバーをActionBarとして使えるように設定
-        setSupportActionBar(toolbar)
-        if (supportActionBar != null) {
-            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        }
 
         // UI部品の設定
         date_button.setOnClickListener(mOnDateClickListener)
         times_button.setOnClickListener(mOnTimeClickListener)
         done_button.setOnClickListener(mOnDoneClickListener)
+
+        make_button.setOnClickListener { view ->
+            val intent = Intent(this@InputActivity, CategoryActivity::class.java)
+            startActivity(intent)
+        }
+
 
         // EXTRA_TASK から Task の id を取得して、 id から Task のインスタンスを取得する
         val intent = intent
@@ -81,6 +90,8 @@ class InputActivity : AppCompatActivity() {
         //  Task の id が taskId のものが検索され、findFirst() によって最初に見つかったインスタンスが返される
         // 新規作成の場合、id には -1 （mTask = null）が入る
         mTask = realm.where(Task::class.java).equalTo("id", taskId).findFirst()
+
+
         realm.close()
 
         // 新規作成の場合
@@ -94,7 +105,7 @@ class InputActivity : AppCompatActivity() {
         } else {
             // 更新の場合
             title_edit_text.setText(mTask!!.title)
-            category_edit_text.setText(mTask!!.category)
+ //           spinner2.setLayerType(mCategory!!.category)
             content_edit_text.setText(mTask!!.contents)
 
             val calendar = Calendar.getInstance()
@@ -113,6 +124,45 @@ class InputActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+
+
+        val realm = Realm.getDefaultInstance()
+
+
+        val categoryRealmResults = realm.where(Category::class.java).findAll()
+        //val categoryRealmResults: ArrayList<Category>
+
+        var mutableList = mutableListOf<String>()
+//
+
+        categoryRealmResults.forEach(){
+            mutableList.add(it.category)
+        }
+
+
+//        val length = categoryRealmResults.count()
+//        var count = 0
+//        while (count < length) {
+//            mutableList.add(categoryRealmResults[count]!!.category)
+//            count++
+//        }
+
+
+        //アダプターを設定
+        val adapter = ArrayAdapter<String>(
+            this,
+            android.R.layout.simple_spinner_item,
+            mutableList
+        )
+
+        spinner2.adapter = adapter
+
+        realm.close()
+
+    }
+
     // Realmに保存/更新するメソッド
     private fun addTask() {
         val realm = Realm.getDefaultInstance()
@@ -122,6 +172,7 @@ class InputActivity : AppCompatActivity() {
         if (mTask == null) {
             // 新規作成の場合
             mTask = Task()
+//            mCategory = Category()
 
             val taskRealmResults = realm.where(Task::class.java).findAll()
 
@@ -132,20 +183,26 @@ class InputActivity : AppCompatActivity() {
                     0
                 }
             mTask!!.id = identifier
+//            mCategory!!.id = identifier
         }
 
         val title = title_edit_text.text.toString()
-        val category = category_edit_text.text.toString()
         val content = content_edit_text.text.toString()
+        val category = spinner2.selectedItem.toString()
 
         mTask!!.title = title
-        mTask!!.category = category
         mTask!!.contents = content
         val calendar = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
         val date = calendar.time
         mTask!!.date = date
+        mTask!!.category = category
+
+//        mCategory!!.category = category
+
 
         realm.copyToRealmOrUpdate(mTask!!) // データの保存・更新
+//        realm.copyToRealmOrUpdate(mCategory!!) // データの保存・更新
+
         // ↑ 引数で与えたオブジェクト (mTask) が存在していれば更新、なければ追加を行う
         realm.commitTransaction() // （挟む）Realmでデータを追加、削除など変更を行う際に必要
 

@@ -10,12 +10,17 @@ import android.content.Intent
 import android.support.v7.app.AlertDialog
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.widget.ArrayAdapter
+import kotlinx.android.synthetic.main.content_input.*
 
 const val EXTRA_TASK = "jp.techacademy.kosuke.task_app.TASK"
 
 class MainActivity : AppCompatActivity() {
     //Realmクラスを保持するmRealmを定義
     private lateinit var mRealm: Realm
+
+//    private var mCategory: Category? = null
+
 
     //データベースに追加や削除など変化があった場合に呼ばれるリスナー
     private val mRealmListener = object : RealmChangeListener<Realm> {
@@ -34,6 +39,10 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this@MainActivity, InputActivity::class.java)
             startActivity(intent)
         }
+
+//        mCategory!!.category = "仕事"
+//        spinner1.adapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item).apply { mCategory!!.category }
+
 
         // Realmの設定
         mRealm = Realm.getDefaultInstance()  //オブジェクトを取得
@@ -58,6 +67,7 @@ class MainActivity : AppCompatActivity() {
 
             // ダイアログを表示する
             val builder = AlertDialog.Builder(this@MainActivity)
+
 
             builder.setTitle("削除")
             builder.setMessage(task.title + "を削除しますか")
@@ -93,12 +103,13 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        //カテゴリー検索
         search_button.setOnClickListener {
-            val category :String? = search_edit_text.text.toString()
+            val category  = spinner1.selectedItem.toString()
+
             if(category == ""){
                 reloadListView()
             }else{
-                // 入力・編集する画面に遷移させる
                 val results2 = mRealm.where(Task::class.java).equalTo("category", category).findAll()
                 // 上記の結果を、TaskList としてセットする
                 mTaskAdapter.taskList = mRealm.copyFromRealm(results2)
@@ -112,6 +123,27 @@ class MainActivity : AppCompatActivity() {
         }
         reloadListView()
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val realm = Realm.getDefaultInstance()
+        val categoryRealmResults = realm.where(Category::class.java).findAll()
+        //val categoryRealmResults: ArrayList<Category>
+        var mutableList = mutableListOf<String>()
+
+        categoryRealmResults.forEach(){
+            mutableList.add(it.category)
+        }
+        //アダプターを設定
+        val adapter = ArrayAdapter<String>(
+            this,
+            android.R.layout.simple_spinner_item,
+            mutableList
+        )
+        spinner1.adapter = adapter
+        realm.close()
     }
 
     private fun reloadListView() {
